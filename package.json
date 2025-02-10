@@ -4,7 +4,7 @@
   "type": "module",
   "main": "dist/navkit.cjs.js",
   "module": "dist/navkit.esm.js",
-  "types": "dist/index.d.ts",
+  "types": "src/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
