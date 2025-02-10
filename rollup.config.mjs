@@ -7,11 +7,11 @@ export default [
     input: "src/index.ts",
     output: [
       {
-        file: "dist/index.esm.js",
+        file: "dist/navkit.esm.js", // Match your package.json
         format: "esm",
       },
       {
-        file: "dist/index.cjs.js",
+        file: "dist/navkit.cjs.js", // Match your package.json
         format: "cjs",
       },
     ],
@@ -20,12 +20,35 @@ export default [
       resolve(),
       typescript({
         tsconfig: "./tsconfig.json",
+        declarationDir: "./dist", // Explicitly set declaration output
+        rootDir: "./src",
       }),
     ],
   },
   {
     input: "src/index.ts",
-    output: [{ file: "dist/index.d.ts", format: "es" }],
+    output: [
+      {
+        file: "dist/index.d.ts",
+        format: "es",
+      },
+    ],
+    plugins: [
+      dts({
+        compilerOptions: {
+          preserveSymlinks: false,
+        },
+      }),
+    ],
+  },
+  {
+    input: "src/hooks/index.ts",
+    output: [
+      {
+        file: "dist/hooks/index.d.ts",
+        format: "es",
+      },
+    ],
     plugins: [dts()],
   },
 ];

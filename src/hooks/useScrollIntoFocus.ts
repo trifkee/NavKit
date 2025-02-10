@@ -1,17 +1,5 @@
-import { computed, unref, watch, type ComputedRef, type Ref } from "vue";
-
-type useScrollIntoFocusType = {
-  position: Ref<{
-    row: number;
-    col: number;
-  }>;
-  selectedElement: ComputedRef<HTMLElement | null>;
-  behavior?: "smooth" | "instant";
-  debounceTimeout?: number;
-  focusableSelector?: string;
-  //   rowClip?: "end" | "start" | "center" | "nearest";
-  //   colClip?: "end" | "start" | "center" | "nearest";
-};
+import { computed, unref, watch } from "vue";
+import { useScrollIntoFocusType } from "../types";
 
 export function useScrollIntoFocus({
   position,
