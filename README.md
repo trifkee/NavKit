@@ -18,9 +18,7 @@ NavKit is a lightweight, flexible Vue.js navigation library designed for keyboar
 ## Installation
 
 ```bash
-npm install navkit
-# or
-yarn add navkit
+npm install navkit-vue
 ```
 
 ## Basic Usage
@@ -50,7 +48,7 @@ import { useNavigation } from "navkit";
   import { ref } from "vue";
   import { useNavigation } from "navkit";
 
-  const rows = ref([3, 3, 3]); // Grid with 3 rows, 3 items each
+  const rows = [3, 3, 3]; // Grid with 3 rows, 3 items each
 
   const { currentElement, currentRow } = useNavigation({
     rows,
@@ -72,16 +70,16 @@ For simpler navigation patterns, you can use the dedicated horizontal or vertica
 import { useNavigationX } from "navkit";
 
 const { currentElement } = useNavigationX({
-  items: ref(5), // Number of items
+  items: 5, // Number of items
   focusableSelector: "[data-keyboard]",
-  cyclic: true,
+  cyclic: false,
 });
 
 // Vertical-only navigation
 import { useNavigationY } from "navkit";
 
 const { currentElement } = useNavigationY({
-  items: ref(3), // Number of items
+  rows: 3, // Number of items
   focusableSelector: "[data-keyboard]",
   cyclic: true,
 });
@@ -108,7 +106,7 @@ const { currentElement } = useNavigationY({
 
 | Option              | Type           | Default              | Description                                |
 | ------------------- | -------------- | -------------------- | ------------------------------------------ |
-| `items`             | `Ref<number>`  | Required             | Number of navigable items                  |
+| `columns/rows`      | `Ref<number>`  | Required             | Number of navigable items                  |
 | `disabled`          | `Ref<boolean>` | `false`              | Disables navigation when true              |
 | `focusableSelector` | `string`       | `'[data-focusable]'` | CSS selector for focusable elements        |
 | `autofocus`         | `boolean`      | `true`               | Automatically focus first element on mount |
@@ -191,7 +189,7 @@ NavKit uses a class-based approach for styling focused elements. By default, it 
   ]);
 
   const { currentElement } = useNavigationX({
-    items: ref(menuItems.value.length),
+    columns: ref(menuItems.value.length),
     cyclic: true,
     onEnter: () => {
       console.log("Selected:", currentElement.value?.textContent);
