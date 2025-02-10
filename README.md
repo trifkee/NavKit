@@ -32,10 +32,25 @@ The library provides three navigation hooks:
 ### 2D Navigation
 
 ```typescript
-import { useNavigation } from "navkit";
+import { useNavigation } from "navkit-vue/hooks";
 ```
 
 ```vue
+<script setup lang="ts">
+  import { ref } from "vue";
+  import { useNavigation } from "navkit-vue/hooks";
+
+  const rows = [3, 3, 3]; // Grid with 3 rows, 3 items each
+
+  const { currentElement, currentRow } = useNavigation({
+    rows,
+    focusableSelector: "[data-keyboard]", // Custom key - default is [data-focusable]
+    onEnter: () => {
+      console.log("Enter pressed on:", currentElement.value); //Callback for each keyboard event
+    },
+  });
+</script>
+
 <template>
   <div class="grid">
     <button v-for="item in items" :key="item.id" data-keyboard>
@@ -43,22 +58,6 @@ import { useNavigation } from "navkit";
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-  import { ref } from "vue";
-  import { useNavigation } from "navkit";
-
-  const rows = [3, 3, 3]; // Grid with 3 rows, 3 items each
-
-  const { currentElement, currentRow } = useNavigation({
-    rows,
-    focusableSelector: "[data-keyboard]",
-    onEnter: () => {
-      // Handle enter key press
-      console.log("Enter pressed on:", currentElement.value);
-    },
-  });
-</script>
 ```
 
 ### Single-Axis Navigation
@@ -67,16 +66,15 @@ For simpler navigation patterns, you can use the dedicated horizontal or vertica
 
 ```typescript
 // Horizontal-only navigation
-import { useNavigationX } from "navkit";
+import { useNavigationX } from "navkit-vue/hooks";
 
 const { currentElement } = useNavigationX({
-  items: 5, // Number of items
+  columns: 5, // Number of items
   focusableSelector: "[data-keyboard]",
-  cyclic: false,
 });
 
 // Vertical-only navigation
-import { useNavigationY } from "navkit";
+import { useNavigationY } from "navkit-vue/hooks";
 
 const { currentElement } = useNavigationY({
   rows: 3, // Number of items
@@ -92,6 +90,13 @@ const { currentElement } = useNavigationY({
 | Option              | Type            | Default              | Description                                    |
 | ------------------- | --------------- | -------------------- | ---------------------------------------------- |
 | `rows`              | `Ref<number[]>` | Required             | Array defining the number of items in each row |
+| `onColumnStart`     | `Callback Fn`   | `null`               | Callback Fn On Column Start                    |
+| `onColumnEnd`       | `Callback Fn`   | `null`               | Callback Fn On Column Edn                      |
+| `onRowStart`        | `Callback Fn`   | `null`               | Callback Fn On Row Start                       |
+| `onRowEnd`          | `Callback Fn`   | `null`               | Callback Fn On Row End                         |
+| `onEnter`           | `Callback Fn`   | `null`               | Callback Fn On Enter                           |
+| `onReturn`          | `Callback Fn`   | `null`               | Callback Fn On Back                            |
+| `initialPosition`   | `PositionType`  | `{ row: 0, col: 0 }` | Starting position                              |
 | `disabled`          | `Ref<boolean>`  | `false`              | Disables navigation when true                  |
 | `focusableSelector` | `string`        | `'[data-focusable]'` | CSS selector for focusable elements            |
 | `autofocus`         | `boolean`       | `true`               | Automatically focus first element on mount     |
@@ -100,19 +105,22 @@ const { currentElement } = useNavigationY({
 | `invertAxis`        | `boolean`       | `false`              | Swap vertical/horizontal navigation            |
 | `autoNextRow`       | `boolean`       | `false`              | Auto-advance to next row                       |
 | `holdColumnPerRow`  | `boolean`       | `false`              | Maintain column position when changing rows    |
-| `initialPosition`   | `PositionType`  | `{ row: 0, col: 0 }` | Starting position                              |
 
-### useNavigationX/Y Options
+### useNavigationX / Y Options
 
 | Option              | Type           | Default              | Description                                |
 | ------------------- | -------------- | -------------------- | ------------------------------------------ |
 | `columns/rows`      | `Ref<number>`  | Required             | Number of navigable items                  |
+| `initialPosition`   | `number`       | `0`                  | Starting position                          |
 | `disabled`          | `Ref<boolean>` | `false`              | Disables navigation when true              |
 | `focusableSelector` | `string`       | `'[data-focusable]'` | CSS selector for focusable elements        |
 | `autofocus`         | `boolean`      | `true`               | Automatically focus first element on mount |
 | `focusClass`        | `string`       | `'focused'`          | CSS class applied to focused element       |
 | `cyclic`            | `boolean`      | `false`              | Enable wrapping around edges               |
-| `initialPosition`   | `number`       | `0`                  | Starting position                          |
+| `onRowStart`        | `Callback Fn`  | `null`               | Callback Fn on Row Start                   |
+| `onRowEnd`          | `Callback Fn`  | `null`               | Callback Fn on Row End                     |
+| `onEnter`           | `Callback Fn`  | `null`               | Callback Fn on Enter                       |
+| `onReturn`          | `Callback Fn`  | `null`               | Callback Fn on Back                        |
 
 ### Callback Events
 
@@ -155,13 +163,17 @@ NavKit uses a class-based approach for styling focused elements. By default, it 
 
 ```vue
 <script setup lang="ts">
-  const rows = ref([4, 3, 5]); // Irregular grid layout
+  const rows = computed(() => [
+    firstRow.value.length,
+    secondRow.value.length,
+    thirdRow.value.length,
+  ]); // Irregular grid layout
 
   const { currentElement } = useNavigation({
     rows,
     cyclic: true, // Enable wrap-around navigation
     autoNextRow: true, // Auto-advance to next row
-    focusableSelector: "[data-keyboard]",
+    focusableSelector: "[data-selector]", // This is optinal, default is `[data-focusable]`
     onEnter: (position) => {
       console.log("Selected position:", position);
     },
@@ -172,6 +184,21 @@ NavKit uses a class-based approach for styling focused elements. By default, it 
 ### Single-Axis Navigation Example
 
 ```vue
+<script setup lang="ts">
+  import { ref } from "vue";
+  import { useNavigationX } from "navkit";
+
+  const columns = computed(() => columns.value.length);
+
+  const { currentElement } = useNavigationX({
+    columns,
+    cyclic: true,
+    onEnter: () => {
+      console.log("Selected:", currentElement.value?.textContent);
+    },
+  });
+</script>
+
 <template>
   <div class="horizontal-menu">
     <button v-for="item in menuItems" :key="item.id" data-keyboard>
@@ -179,23 +206,6 @@ NavKit uses a class-based approach for styling focused elements. By default, it 
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-  import { ref } from "vue";
-  import { useNavigationX } from "navkit";
-
-  const menuItems = ref([
-    /* your menu items */
-  ]);
-
-  const { currentElement } = useNavigationX({
-    columns: ref(menuItems.value.length),
-    cyclic: true,
-    onEnter: () => {
-      console.log("Selected:", currentElement.value?.textContent);
-    },
-  });
-</script>
 ```
 
 ### TV Remote Navigation

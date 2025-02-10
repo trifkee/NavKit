@@ -5,6 +5,10 @@
   "main": "dist/navkit.cjs.js",
   "module": "dist/navkit.esm.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trifkee/NavKit"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
