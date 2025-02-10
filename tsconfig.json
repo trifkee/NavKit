@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "module": "esnext",
-    "strict": true,
-    "declaration": true,
-    "declarationDir": "./dist",
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "target": "es2018", // Choose a modern but compatible target version
+    "module": "esnext", // ES modules for modern JS projects
+    "strict": true, // Enable strict type-checking options
+    "declaration": true, // Generate .d.ts declaration files
+    "declarationDir": "./dist", // Output .d.ts files to the dist directory
+    "outDir": "./dist", // Output compiled .js files to the dist directory
+    "esModuleInterop": true, // Compatibility with CommonJS modules
+    "moduleResolution": "node", // Use Node-style module resolution
+    "skipLibCheck": true, // Skip type checking of declaration files in node_modules
+    "forceConsistentCasingInFileNames": true // Ensure file names are consistent
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"], // Include all source files in the src directory
+  "exclude": ["node_modules", "dist"] // Exclude these folders to prevent unnecessary checks
 }
