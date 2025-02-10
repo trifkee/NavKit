@@ -5,28 +5,54 @@
   "main": "dist/navkit.cjs.js",
   "module": "dist/navkit.esm.js",
   "exports": {
-    ".": {
-      "import": "dist/navkit.esm.js",
-      "require": "dist/navkit.cjs.js"
-    }
+    "import": "dist/navkit.esm.js",
+    "require": "dist/navkit.cjs.js"
   },
   "scripts": {
-    "build": "rollup -c"
-  },
-  "keywords": [],
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build"
+  },"keywords": [
+  "tv",
+  "ott",
+  "streaming",
+  "smart-tv",
+  "television",
+  "media",
+  "video",
+  "entertainment",
+  "content-platform",
+  "vue-tv",
+  "tv-app",
+  "ott-platform",
+  "video-streaming",
+  "media-player",
+  "television-interface",
+  "broadcast",
+  "streaming-service",
+  "tv-components",
+  "vue-ott",
+  "connected-tv",
+  "digital-television",
+  "tv-navigation",
+  "media-streaming",
+  "interactive-tv",
+  "tv-ui",
+  "television-app"
+],
   "author": "Lazar Trifunovic",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "tslib": "^2.8.1",
-    "vue": "^3.5.13"
+  "description": "Vue navigation and utility composables",
+  "peerDependencies": {
+    "vue": "^3.2.0"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.2",
     "rollup": "^4.34.6",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "typescript": "^5.7.3"
+    "rollup-plugin-dts": "^6.1.1",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.3",
+    "vue": "^3.5.13"
   }
 }
