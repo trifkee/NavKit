@@ -5,8 +5,16 @@
   "main": "dist/navkit.cjs.js",
   "module": "dist/navkit.esm.js",
   "exports": {
-    "import": "dist/navkit.esm.js",
-    "require": "dist/navkit.cjs.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/navkit.esm.js",
+      "require": "./dist/navkit.cjs.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.esm.js",
+      "require": "./dist/hooks/index.cjs.js"
+    }
   },
   "scripts": {
     "build": "rollup -c",
