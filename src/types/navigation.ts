@@ -34,6 +34,8 @@ export type NavigationYType = NavigationConfigType & {
   onReturn?: (position: number) => void;
   onRowStart?: () => void;
   onRowEnd?: () => void;
+  onLeft?: () => void;
+  onRight?: () => void;
 };
 
 export type NavigationXType = NavigationConfigType & {
@@ -43,4 +45,6 @@ export type NavigationXType = NavigationConfigType & {
   onColumnStart?: () => void;
   onColumnEnd?: () => void;
   onReturn?: (position: number) => void;
+  onUp?: () => void;
+  onDown?: () => void;
 };
