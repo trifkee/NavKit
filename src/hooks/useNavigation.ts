@@ -1,5 +1,12 @@
-import { ref, onMounted, onUnmounted, watch, unref } from "vue";
-import { computed, isRef } from "@vue/reactivity";
+import {
+  computed,
+  isRef,
+  ref,
+  onMounted,
+  onUnmounted,
+  watch,
+  unref,
+} from "vue";
 
 import type { NavigationType, PositionType } from "../types/navigation";
 
