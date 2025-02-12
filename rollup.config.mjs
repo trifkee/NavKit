@@ -7,11 +7,11 @@ export default [
     input: "src/index.ts",
     output: [
       {
-        file: "dist/navkit.esm.js", // Match your package.json
+        file: "dist/navkit.esm.js",
         format: "esm",
       },
       {
-        file: "dist/navkit.cjs.js", // Match your package.json
+        file: "dist/navkit.cjs.js",
         format: "cjs",
       },
     ],
@@ -20,7 +20,7 @@ export default [
       resolve(),
       typescript({
         tsconfig: "./tsconfig.json",
-        declarationDir: "./dist", // Explicitly set declaration output
+        declarationDir: "./dist",
         rootDir: "./src",
       }),
     ],

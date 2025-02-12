@@ -8,65 +8,8 @@ import {
   unref,
 } from "vue";
 
-import { type Ref } from "vue";
-
-export type NavigationConfigType = {
-  disabled?: boolean | Ref<boolean>;
-  focusableSelector?: string;
-  autofocus?: boolean;
-  focusClass?: string;
-  cyclic?: boolean;
-};
-
-export type NavigationType = NavigationConfigType & {
-  rows: number[] | Ref<number[]>;
-  initialPosition?: PositionType;
-  autoNextRow?: boolean;
-  invertAxis?: boolean;
-  holdColumnPerRow?: boolean;
-  onEnter?: (position: PositionType) => void;
-  onReturn?: (position: PositionType) => void;
-  onColumnStart?: () => void;
-  onColumnEnd?: () => void;
-  onRowStart?: () => void;
-  onRowEnd?: () => void;
-};
-
-export type PositionType = {
-  row: number;
-  col: number;
-};
-
-export type NavigationYType = NavigationConfigType & {
-  rows: number | Ref<number>;
-  initialPosition?: number;
-  onEnter?: (position: number) => void;
-  onReturn?: (position: number) => void;
-  onRowStart?: () => void;
-  onRowEnd?: () => void;
-  onLeft?: () => void;
-  onRight?: () => void;
-};
-
-export type NavigationXType = NavigationConfigType & {
-  columns: number | Ref<number>;
-  initialPosition?: number;
-  onEnter?: (position: number) => void;
-  onColumnStart?: () => void;
-  onColumnEnd?: () => void;
-  onReturn?: (position: number) => void;
-  onUp?: () => void;
-  onDown?: () => void;
-};
-
-export enum KeyboardEnum {
-  Left = "ArrowLeft",
-  Right = "ArrowRight",
-  Up = "ArrowUp",
-  Down = "ArrowDown",
-  Enter = "Enter",
-  Back = "Escape",
-}
+import { NavigationType, PositionType } from "../types";
+import { KeyboardEnum } from "../enums/keyboard.enum";
 
 // Logic
 export function useNavigation({
@@ -87,9 +30,9 @@ export function useNavigation({
   autoNextRow = false,
   holdColumnPerRow = false,
 }: NavigationType) {
-  const computedRows = computed(() =>
-    Array.isArray(rows) ? rows : unref(rows)
-  );
+  const controller = new AbortController();
+
+  const computedRows = computed(() => (isRef(rows) ? rows.value : rows));
 
   const currentPosition = ref<PositionType>(initialPosition);
   const lastFocusedElement = ref<HTMLElement | null>(null);
@@ -101,23 +44,6 @@ export function useNavigation({
 
   // Disabling the hook
   const isDisabled = computed(() => unref(disabled));
-
-  watch(isDisabled, (newValue) => {
-    if (newValue) {
-      lastFocusedElement.value?.blur();
-      lastFocusedElement.value?.classList.remove(focusClass);
-
-      window.removeEventListener("keydown", handleKeyDown);
-    } else {
-      if (autofocus && !isDisabled.value) {
-        const element = getFocusableElement(currentPosition.value);
-        focusElement(element);
-      }
-
-      window.removeEventListener("keydown", handleKeyDown);
-      window.addEventListener("keydown", handleKeyDown);
-    }
-  });
 
   const toggleDisabled = (value?: boolean) => {
     if (value !== undefined) {
@@ -372,7 +298,7 @@ export function useNavigation({
     }
   };
 
-  watch(currentPosition, (newPosition) => {
+  const stopWatchPosition = watch(currentPosition, (newPosition) => {
     if (!isDisabled.value && !isProcessing) {
       const element = getFocusableElement(newPosition);
       focusElement(element);
@@ -380,25 +306,36 @@ export function useNavigation({
   });
 
   // Check for disabled value, remove listeners if is disabled
-  watch(isDisabled, (newValue) => {
+  const stopWatchIsDisabled = watch(isDisabled, (newValue) => {
     if (newValue) {
+      lastFocusedElement.value?.blur();
+      lastFocusedElement.value?.classList.remove(focusClass);
       removeEventListeners();
     } else {
+      if (autofocus && !isDisabled.value) {
+        const element = getFocusableElement(currentPosition.value);
+        focusElement(element);
+      }
+
       addEventListeners();
     }
   });
 
   const addEventListeners = () => {
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, {
+      signal: controller.signal,
+    });
   };
 
   const removeEventListeners = () => {
-    window.removeEventListener("keydown", handleKeyDown);
+    controller.abort();
   };
 
   // Lifecycle hooks
   onMounted(() => {
+    console.log("Triggered useNavigation hook onMounted");
     if (!isDisabled.value) {
+      console.log("Hook is enabled");
       addEventListeners();
 
       if (autofocus) {
@@ -409,7 +346,10 @@ export function useNavigation({
   });
 
   onUnmounted(() => {
-    removeEventListeners();
+    console.log("Triggered useNavigation hook onUmounted");
+    controller.abort(); // Removes event listeners
+    stopWatchIsDisabled(); // Stops watching `isDisabled`
+    stopWatchPosition(); // Stops watching `currentPosition`
   });
 
   return {
