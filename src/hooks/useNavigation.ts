@@ -427,7 +427,7 @@ export function useNavigation({
     getCurrentFocusedElement: () => lastFocusedElement.value,
     debug: {
       focusableElements: findFocusableElements(),
-      isHookDisabled: isDisabled,
+      isHookDisabled: isDisabled.value,
     },
   };
 }
