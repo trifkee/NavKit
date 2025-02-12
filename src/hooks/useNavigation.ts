@@ -8,9 +8,65 @@ import {
   unref,
 } from "vue";
 
-import type { NavigationType, PositionType } from "../types/navigation";
+import { type Ref } from "vue";
 
-import { KeyboardEnum } from "../enums/keyboard.enum";
+export type NavigationConfigType = {
+  disabled?: boolean | Ref<boolean>;
+  focusableSelector?: string;
+  autofocus?: boolean;
+  focusClass?: string;
+  cyclic?: boolean;
+};
+
+export type NavigationType = NavigationConfigType & {
+  rows: number[] | Ref<number[]>;
+  initialPosition?: PositionType;
+  autoNextRow?: boolean;
+  invertAxis?: boolean;
+  holdColumnPerRow?: boolean;
+  onEnter?: (position: PositionType) => void;
+  onReturn?: (position: PositionType) => void;
+  onColumnStart?: () => void;
+  onColumnEnd?: () => void;
+  onRowStart?: () => void;
+  onRowEnd?: () => void;
+};
+
+export type PositionType = {
+  row: number;
+  col: number;
+};
+
+export type NavigationYType = NavigationConfigType & {
+  rows: number | Ref<number>;
+  initialPosition?: number;
+  onEnter?: (position: number) => void;
+  onReturn?: (position: number) => void;
+  onRowStart?: () => void;
+  onRowEnd?: () => void;
+  onLeft?: () => void;
+  onRight?: () => void;
+};
+
+export type NavigationXType = NavigationConfigType & {
+  columns: number | Ref<number>;
+  initialPosition?: number;
+  onEnter?: (position: number) => void;
+  onColumnStart?: () => void;
+  onColumnEnd?: () => void;
+  onReturn?: (position: number) => void;
+  onUp?: () => void;
+  onDown?: () => void;
+};
+
+export enum KeyboardEnum {
+  Left = "ArrowLeft",
+  Right = "ArrowRight",
+  Up = "ArrowUp",
+  Down = "ArrowDown",
+  Enter = "Enter",
+  Back = "Escape",
+}
 
 // Logic
 export function useNavigation({
@@ -31,7 +87,9 @@ export function useNavigation({
   autoNextRow = false,
   holdColumnPerRow = false,
 }: NavigationType) {
-  const computedRows = computed(() => unref(rows));
+  const computedRows = computed(() =>
+    Array.isArray(rows) ? rows : unref(rows)
+  );
 
   const currentPosition = ref<PositionType>(initialPosition);
   const lastFocusedElement = ref<HTMLElement | null>(null);
@@ -88,6 +146,8 @@ export function useNavigation({
 
   const getFocusableElement = (pos: PositionType): HTMLElement | null => {
     const elements = findFocusableElements();
+
+    if (!elements.length) return null;
 
     let currentRow = 0;
     let currentCol = 0;
@@ -322,30 +382,34 @@ export function useNavigation({
   // Check for disabled value, remove listeners if is disabled
   watch(isDisabled, (newValue) => {
     if (newValue) {
-      window.removeEventListener("keydown", handleKeyDown);
+      removeEventListeners();
     } else {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.addEventListener("keydown", handleKeyDown);
+      addEventListeners();
     }
   });
 
+  const addEventListeners = () => {
+    window.addEventListener("keydown", handleKeyDown);
+  };
+
+  const removeEventListeners = () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+
   // Lifecycle hooks
   onMounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
-    window.addEventListener("keydown", handleKeyDown);
+    if (!isDisabled.value) {
+      addEventListeners();
 
-    if (autofocus && !isDisabled.value) {
-      const element = getFocusableElement(currentPosition.value);
-      focusElement(element);
+      if (autofocus) {
+        const element = getFocusableElement(currentPosition.value);
+        focusElement(element);
+      }
     }
   });
 
   onUnmounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
-
-    if (lastFocusedElement.value) {
-      lastFocusedElement.value.classList.remove(focusClass);
-    }
+    removeEventListeners();
   });
 
   return {
@@ -361,5 +425,8 @@ export function useNavigation({
     isValidPosition,
     focusElement,
     getCurrentFocusedElement: () => lastFocusedElement.value,
+    debug: {
+      focusableElements: findFocusableElements(),
+    },
   };
 }
