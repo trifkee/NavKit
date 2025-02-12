@@ -24,6 +24,8 @@ export function useNavigationY({
   onRowEnd,
   onEnter,
   onReturn,
+  onRight,
+  onLeft,
 }: NavigationYType) {
   const computedRows = ref(unref(rows));
 
@@ -47,7 +49,6 @@ export function useNavigationY({
         focusElement(element as HTMLElement);
       }
 
-      window.removeEventListener("keydown", handleKeyDown);
       window.addEventListener("keydown", handleKeyDown);
     }
   });
@@ -152,6 +153,14 @@ export function useNavigationY({
 
         break;
 
+      case KeyboardEnum.Left:
+        onLeft?.();
+        break;
+
+      case KeyboardEnum.Right:
+        onRight?.();
+        break;
+
       case KeyboardEnum.Enter:
         onEnter?.(currentPosition.value);
         break;
@@ -169,7 +178,6 @@ export function useNavigationY({
       currentPosition.value = newPosition;
     } else {
       console.error("Position Not Valid:", newPosition);
-      // currentPosition.value = newPosition;
     }
   };
 
@@ -180,20 +188,13 @@ export function useNavigationY({
     }
   });
 
-  // Check for disabled value, remove listeners if is disabled
-  watch(isDisabled, (newValue) => {
-    if (newValue) {
-      window.removeEventListener("keydown", handleKeyDown);
-    } else {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.addEventListener("keydown", handleKeyDown);
-    }
-  });
-
   // Lifecycle hooks
   onMounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
-    window.addEventListener("keydown", handleKeyDown);
+    if (isDisabled.value) {
+      window.removeEventListener("keydown", handleKeyDown);
+    } else {
+      window.addEventListener("keydown", handleKeyDown);
+    }
 
     if (autofocus && !isDisabled.value) {
       const element = getFocusableElement(currentPosition.value);

@@ -15,7 +15,7 @@ import { KeyboardEnum } from "../enums/keyboard.enum";
 export function useNavigationX({
   columns,
   initialPosition = 0,
-  disabled = false,
+  disabled = ref(false),
   focusableSelector = "[data-focusable]",
   autofocus = true,
   focusClass = "focused",
@@ -24,6 +24,8 @@ export function useNavigationX({
   onReturn,
   onColumnEnd,
   onColumnStart,
+  onDown,
+  onUp,
 }: NavigationXType) {
   const computedCols = computed(() => unref(columns));
 
@@ -47,7 +49,6 @@ export function useNavigationX({
         focusElement(element as HTMLElement);
       }
 
-      window.removeEventListener("keydown", handleKeyDown);
       window.addEventListener("keydown", handleKeyDown);
     }
   });
@@ -119,7 +120,7 @@ export function useNavigationX({
     }
   };
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (disabled || isProcessing) return;
+    if (isDisabled.value || isProcessing) return;
 
     let newPosition = currentPosition.value;
 
@@ -150,6 +151,14 @@ export function useNavigationX({
         }
         break;
 
+      case KeyboardEnum.Up:
+        onUp?.();
+        break;
+
+      case KeyboardEnum.Down:
+        onDown?.();
+        break;
+
       case KeyboardEnum.Enter:
         onEnter?.(currentPosition.value);
         return;
@@ -171,28 +180,21 @@ export function useNavigationX({
   };
 
   watch(currentPosition, (newPosition) => {
-    if (!disabled && !isProcessing) {
+    if (!isDisabled.value && !isProcessing) {
       const element = getFocusableElement(newPosition);
       focusElement(element as HTMLElement);
     }
   });
 
-  // Check for disabled value, remove listeners if is disabled
-  watch(isDisabled, (newValue) => {
-    if (newValue) {
-      window.removeEventListener("keydown", handleKeyDown);
-    } else {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.addEventListener("keydown", handleKeyDown);
-    }
-  });
-
   // Lifecycle hooks
   onMounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
-    window.addEventListener("keydown", handleKeyDown);
+    if (isDisabled.value) {
+      window.removeEventListener("keydown", handleKeyDown);
+    } else {
+      window.addEventListener("keydown", handleKeyDown);
+    }
 
-    if (autofocus && !disabled) {
+    if (autofocus && !isDisabled.value) {
       const element = getFocusableElement(currentPosition.value);
       focusElement(element as HTMLElement);
     }
