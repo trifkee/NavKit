@@ -1,18 +1,19 @@
 import type { useScrollIntoFocusType } from "../types/focus";
 import { ref, unref, watch, nextTick } from "vue";
-
 export function useScrollIntoFocus({
   position,
   selectedElement,
   behavior = "smooth",
-  debounceTimeout = 200,
+  delay = 1000,
   parentSelector = "[data-parent]",
   buffer = 180,
   bufferX,
   bufferY,
   suppressLogs = true,
+  scrollType = "throttle",
 }: useScrollIntoFocusType) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
+  let lastCall = 0;
 
   const currElement = ref<HTMLElement | null>(null);
   const parentContainer = ref<HTMLElement | null>(null);
@@ -28,107 +29,94 @@ export function useScrollIntoFocus({
     const elementRect = element.getBoundingClientRect();
     const parentRect = parent.getBoundingClientRect();
 
-    // Check horizontal visibility
-    const isVisibleHorizontally =
-      elementRect.left >= parentRect.left &&
-      elementRect.right <= parentRect.right;
-
-    // Check vertical visibility
-    const isVisibleVertically =
-      elementRect.top >= parentRect.top &&
-      elementRect.bottom <= parentRect.bottom;
-
     return {
-      isFullyVisible: isVisibleHorizontally && isVisibleVertically,
+      isFullyVisible:
+        elementRect.left >= parentRect.left &&
+        elementRect.right <= parentRect.right &&
+        elementRect.top >= parentRect.top &&
+        elementRect.bottom <= parentRect.bottom,
       horizontalOverflow: elementRect.right - parentRect.right,
       verticalOverflow: elementRect.bottom - parentRect.bottom,
+      topOverflow: parentRect.top - elementRect.top,
+      leftOverflow: parentRect.left - elementRect.left,
     };
+  };
+
+  const scrollWindow = () => {
+    const element = unref(currElement);
+    const parent = unref(parentContainer);
+
+    if (element && parent) {
+      const {
+        isFullyVisible,
+        horizontalOverflow,
+        verticalOverflow,
+        topOverflow,
+        leftOverflow,
+      } = isElementFullyVisible(element, parent);
+
+      if (!isFullyVisible) {
+        // Scroll Down
+        if (verticalOverflow > 0) {
+          parent.scrollTo({
+            top: parent.scrollTop + verticalOverflow + (bufferY ?? buffer),
+            behavior,
+          });
+        }
+        // Scroll Up (Element is above the viewport)
+        if (topOverflow > 0) {
+          parent.scrollTo({
+            top: parent.scrollTop - topOverflow - (bufferY ?? buffer),
+            behavior,
+          });
+        }
+
+        // Scroll Right
+        if (horizontalOverflow > 0) {
+          parent.scrollTo({
+            left: parent.scrollLeft + horizontalOverflow + (bufferX ?? buffer),
+            behavior,
+          });
+        }
+        // Scroll Left (Element is off-screen to the left)
+        if (leftOverflow > 0) {
+          parent.scrollTo({
+            left: parent.scrollLeft - leftOverflow - (bufferX ?? buffer),
+            behavior,
+          });
+        }
+      }
+    }
   };
 
   nextTick(setParentContainer);
 
   watch(selectedElement, (newVal) => {
     if (newVal) {
-      currElement.value = newVal;
+      nextTick(() => {
+        currElement.value = newVal;
+      });
     }
   });
 
-  watch(position, () => {
+  watch(position, async () => {
     if (!parentContainer.value) {
-      nextTick(setParentContainer);
+      await nextTick(setParentContainer);
     }
+    await nextTick();
+    currElement.value = unref(selectedElement);
 
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(() => {
-      const element = unref(currElement);
-      const parent = unref(parentContainer);
-
-      if (element && parent) {
-        const { isFullyVisible, horizontalOverflow, verticalOverflow } =
-          isElementFullyVisible(element, parent);
-
-        if (!isFullyVisible) {
-          // Handle vertical scrolling
-          if (verticalOverflow > 0) {
-            const newScrollTop =
-              parent.scrollTop + verticalOverflow + (bufferY ?? buffer);
-            parent.scrollTo({
-              top: newScrollTop,
-              behavior,
-            });
-          }
-
-          // Handle horizontal scrolling
-          if (horizontalOverflow > 0) {
-            const newScrollLeft =
-              parent.scrollLeft + horizontalOverflow + (bufferX ?? buffer);
-            parent.scrollTo({
-              left: newScrollLeft,
-              behavior,
-            });
-          }
-
-          // If element is above or to the left of visible area
-          const elementRect = element.getBoundingClientRect();
-          const parentRect = parent.getBoundingClientRect();
-
-          if (elementRect.top < parentRect.top) {
-            const topAdjustment = elementRect.top - parentRect.top - 180;
-            parent.scrollBy({
-              top: topAdjustment,
-              behavior,
-            });
-          }
-
-          if (elementRect.left < parentRect.left) {
-            const leftAdjustment = elementRect.left - parentRect.left - 50;
-            parent.scrollBy({
-              left: leftAdjustment,
-              behavior,
-            });
-          }
-        }
-
-        if (suppressLogs === false) {
-          // Log visibility status for debugging
-          console.info("Visibility check:", {
-            isFullyVisible,
-            horizontalOverflow,
-            verticalOverflow,
-            element: {
-              left: element.getBoundingClientRect().left,
-              right: element.getBoundingClientRect().right,
-            },
-            parent: {
-              left: parent.getBoundingClientRect().left,
-              right: parent.getBoundingClientRect().right,
-            },
-          });
-        }
+    if (scrollType === "throttle") {
+      const now = new Date().getTime();
+      if (now - lastCall >= delay) {
+        lastCall = now;
+        scrollWindow();
       }
-    }, debounceTimeout);
+    } else if (scrollType === "debounce") {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(scrollWindow, delay);
+    }
   });
 }

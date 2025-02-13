@@ -7,13 +7,14 @@ export type useScrollIntoFocusType = {
   }>;
   selectedElement: ComputedRef<HTMLElement | null> | Ref<HTMLElement | null>;
   behavior?: "smooth" | "instant";
-  debounceTimeout?: number;
+  delay?: number;
   focusableSelector?: string;
   parentSelector?: string;
   buffer?: number;
   bufferX?: number;
   bufferY?: number;
   suppressLogs?: boolean;
+  scrollType: "throttle" | "debounce";
   //   rowClip?: "end" | "start" | "center" | "nearest";
   //   colClip?: "end" | "start" | "center" | "nearest";
 };
