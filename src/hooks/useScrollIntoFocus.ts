@@ -112,7 +112,7 @@ export function useScrollIntoFocus({
           }
         }
 
-        if (!suppressLogs) {
+        if (suppressLogs === false) {
           // Log visibility status for debugging
           console.info("Visibility check:", {
             isFullyVisible,
