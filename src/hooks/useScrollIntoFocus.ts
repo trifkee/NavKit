@@ -103,11 +103,14 @@ export function useScrollIntoFocus({
     if (!parentContainer.value) {
       await nextTick(setParentContainer);
     }
+
     await nextTick();
+
     currElement.value = unref(selectedElement);
 
     if (scrollType === "throttle") {
       const now = new Date().getTime();
+
       if (now - lastCall >= delay) {
         lastCall = now;
         scrollWindow();

@@ -37,7 +37,7 @@ export function useNavigationY({
   // Disabling the hook
   const isDisabled = computed(() => unref(disabled));
 
-  watch(isDisabled, (newValue) => {
+  const isDisabledWatcher = watch(isDisabled, (newValue) => {
     if (newValue) {
       lastFocusedElement.value?.blur();
       lastFocusedElement.value?.classList.remove(focusClass);
@@ -181,7 +181,7 @@ export function useNavigationY({
     }
   };
 
-  watch(currentPosition, (newPosition) => {
+  const currentPositionWatcher = watch(currentPosition, (newPosition) => {
     if (!isDisabled.value && !isProcessing) {
       const element = getFocusableElement(newPosition);
       focusElement(element as HTMLElement);
@@ -208,6 +208,9 @@ export function useNavigationY({
     if (lastFocusedElement.value) {
       lastFocusedElement.value.classList.remove(focusClass);
     }
+
+    isDisabledWatcher();
+    currentPositionWatcher();
   });
 
   return {
