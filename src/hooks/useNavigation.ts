@@ -388,9 +388,7 @@ export function useNavigation({
 
   // Lifecycle hooks
   onMounted(() => {
-    console.log("Triggered useNavigation hook onMounted");
     if (!isDisabled.value) {
-      console.log("Hook is enabled");
       addEventListeners();
 
       if (autofocus) {
@@ -401,7 +399,6 @@ export function useNavigation({
   });
 
   onUnmounted(() => {
-    console.log("Triggered useNavigation hook onUmounted");
     stopWatchIsDisabled();
     stopWatchPosition();
   });

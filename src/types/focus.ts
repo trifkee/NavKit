@@ -13,6 +13,7 @@ export type useScrollIntoFocusType = {
   buffer?: number;
   bufferX?: number;
   bufferY?: number;
+  suppressLogs?: boolean;
   //   rowClip?: "end" | "start" | "center" | "nearest";
   //   colClip?: "end" | "start" | "center" | "nearest";
 };

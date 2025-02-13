@@ -10,6 +10,7 @@ export function useScrollIntoFocus({
   buffer = 180,
   bufferX,
   bufferY,
+  suppressLogs = true,
 }: useScrollIntoFocusType) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -111,20 +112,22 @@ export function useScrollIntoFocus({
           }
         }
 
-        // Log visibility status for debugging
-        console.log("Visibility check:", {
-          isFullyVisible,
-          horizontalOverflow,
-          verticalOverflow,
-          element: {
-            left: element.getBoundingClientRect().left,
-            right: element.getBoundingClientRect().right,
-          },
-          parent: {
-            left: parent.getBoundingClientRect().left,
-            right: parent.getBoundingClientRect().right,
-          },
-        });
+        if (!suppressLogs) {
+          // Log visibility status for debugging
+          console.info("Visibility check:", {
+            isFullyVisible,
+            horizontalOverflow,
+            verticalOverflow,
+            element: {
+              left: element.getBoundingClientRect().left,
+              right: element.getBoundingClientRect().right,
+            },
+            parent: {
+              left: parent.getBoundingClientRect().left,
+              right: parent.getBoundingClientRect().right,
+            },
+          });
+        }
       }
     }, debounceTimeout);
   });
