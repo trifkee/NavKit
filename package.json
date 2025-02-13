@@ -1,6 +1,6 @@
 {
   "name": "navkit-vue",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "type": "module",
   "main": "dist/navkit.cjs.js",
   "module": "dist/navkit.esm.js",
