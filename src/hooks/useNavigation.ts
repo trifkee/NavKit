@@ -87,8 +87,6 @@ export function useNavigation({
   autoNextRow = false,
   holdColumnPerRow = false,
 }: NavigationType) {
-  const controller = new AbortController();
-
   const computedRows = computed(() => (isRef(rows) ? rows.value : rows));
 
   const currentPosition = ref<PositionType>(initialPosition);
