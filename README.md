@@ -32,13 +32,13 @@ The library provides three navigation hooks:
 ### 2D Navigation
 
 ```typescript
-import { useNavigation } from "navkit-vue/hooks";
+import { useNavigation } from "navkit-vue";
 ```
 
 ```vue
 <script setup lang="ts">
   import { ref } from "vue";
-  import { useNavigation } from "navkit-vue/hooks";
+  import { useNavigation } from "navkit-vue";
 
   const rows = [3, 3, 3]; // Grid with 3 rows, 3 items each
 
@@ -66,7 +66,7 @@ For simpler navigation patterns, you can use the dedicated horizontal or vertica
 
 ```typescript
 // Horizontal-only navigation
-import { useNavigationX } from "navkit-vue/hooks";
+import { useNavigationX } from "navkit-vue";
 
 const { currentElement } = useNavigationX({
   columns: 5, // Number of items
@@ -74,7 +74,7 @@ const { currentElement } = useNavigationX({
 });
 
 // Vertical-only navigation
-import { useNavigationY } from "navkit-vue/hooks";
+import { useNavigationY } from "navkit-vue";
 
 const { currentElement } = useNavigationY({
   rows: 3, // Number of items
@@ -90,12 +90,6 @@ const { currentElement } = useNavigationY({
 | Option              | Type            | Default              | Description                                    |
 | ------------------- | --------------- | -------------------- | ---------------------------------------------- |
 | `rows`              | `Ref<number[]>` | Required             | Array defining the number of items in each row |
-| `onColumnStart`     | `Callback Fn`   | `null`               | Callback Fn On Column Start                    |
-| `onColumnEnd`       | `Callback Fn`   | `null`               | Callback Fn On Column Edn                      |
-| `onRowStart`        | `Callback Fn`   | `null`               | Callback Fn On Row Start                       |
-| `onRowEnd`          | `Callback Fn`   | `null`               | Callback Fn On Row End                         |
-| `onEnter`           | `Callback Fn`   | `null`               | Callback Fn On Enter                           |
-| `onReturn`          | `Callback Fn`   | `null`               | Callback Fn On Back                            |
 | `initialPosition`   | `PositionType`  | `{ row: 0, col: 0 }` | Starting position                              |
 | `disabled`          | `Ref<boolean>`  | `false`              | Disables navigation when true                  |
 | `focusableSelector` | `string`        | `'[data-focusable]'` | CSS selector for focusable elements            |
@@ -132,6 +126,10 @@ const { currentElement } = useNavigationY({
 | `onRowEnd`      | `() => void`                       | Called when navigation reaches last row     |
 | `onEnter`       | `(position: PositionType) => void` | Called when Enter key is pressed            |
 | `onReturn`      | `(position: PositionType) => void` | Called when Return/Back key is pressed      |
+| `onDown  `      | `() => void`                       | For X Navigation Type                       |
+| `onUp`          | `() => void`                       | For X Navigation Type                       |
+| `onLeft`        | `() => void`                       | For Y Navigation Type                       |
+| `onRight`       | `() => void`                       | For Y Navigation Type                       |
 
 ### Return Values
 
@@ -223,6 +221,41 @@ NavKit uses a class-based approach for styling focused elements. By default, it 
   });
 </script>
 ```
+
+### Scroll Into Focus
+
+The `useScrollIntoFocus` hook provides automatic scrolling functionality to ensure focused elements are always visible within their container. This is particularly useful for large lists or grids where content may extend beyond the viewport.
+
+```typescript
+import { useScrollIntoFocus } from "navkit-vue";
+
+const { currentElement, position } = useNavigation({
+  rows: [5, 5, 5],
+});
+
+useScrollIntoFocus({
+  position,
+  selectedElement: currentElement,
+  behavior: "smooth",
+  parentSelector: "[data-parent]",
+  buffer: 180,
+});
+```
+
+#### useScrollIntoFocus Options
+
+| Option            | Type                       | Default           | Description                                             |
+| ----------------- | -------------------------- | ----------------- | ------------------------------------------------------- |
+| `position`        | `Ref<PositionType>`        | Required          | Current navigation position                             |
+| `selectedElement` | `Ref<HTMLElement \| null>` | Required          | Currently focused element                               |
+| `behavior`        | `"smooth" \| "auto"`       | `"smooth"`        | Scroll behavior                                         |
+| `delay`           | `number`                   | `1000`            | Delay in milliseconds for scroll throttling/debouncing  |
+| `parentSelector`  | `string`                   | `"[data-parent]"` | CSS selector for scrollable container                   |
+| `buffer`          | `number`                   | `180`             | Default buffer space around focused element (in pixels) |
+| `bufferX`         | `number`                   | `buffer`          | Horizontal buffer space (overrides default buffer)      |
+| `bufferY`         | `number`                   | `buffer`          | Vertical buffer space (overrides default buffer)        |
+| `suppressLogs`    | `boolean`                  | `true`            | Suppress warning logs                                   |
+| `scrollType`      | `"throttle" \| "debounce"` | `"throttle"`      | Scroll event handling type                              |
 
 ## Browser Support
 
