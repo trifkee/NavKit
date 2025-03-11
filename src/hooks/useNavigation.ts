@@ -210,15 +210,22 @@ export function useNavigation({
           if (invertAxis) {
             newPosition.row--;
 
+            newPosition.row = Math.max(newPosition.row, 0);
+
             newPosition.col = holdColumnPerRow
-              ? currentPosition.value.col
-              : positions.value[newPosition.row];
+              ? Math.min(
+                  currentPosition.value.col,
+                  computedRows.value[newPosition.row] - 1
+                )
+              : Math.min(
+                  positions.value[newPosition.row],
+                  computedRows.value[newPosition.row] - 1
+                );
 
             break;
           }
-          newPosition.col--;
 
-          positions.value[newPosition.row] = newPosition.col;
+          newPosition.col--;
 
           if (newPosition.col < 0) {
             if (cyclic) {
@@ -227,31 +234,48 @@ export function useNavigation({
                   newPosition.row > 0
                     ? newPosition.row - 1
                     : computedRows.value.length - 1;
+
+                newPosition.col = computedRows.value[newPosition.row] - 1;
+              } else {
+                newPosition.col = 0;
               }
-              newPosition.col = computedRows.value[newPosition.row] - 1;
             } else {
+              newPosition.col = 0;
               onColumnStart?.();
               return;
             }
           }
+
+          positions.value[newPosition.row] = newPosition.col;
           break;
 
         case KeyboardEnum.Right:
           if (invertAxis) {
             newPosition.row++;
 
+            newPosition.row = Math.min(
+              newPosition.row,
+              computedRows.value.length - 1
+            );
+
             newPosition.col = holdColumnPerRow
-              ? currentPosition.value.col
-              : positions.value[newPosition.row];
+              ? Math.min(
+                  currentPosition.value.col,
+                  computedRows.value[newPosition.row] - 1
+                )
+              : Math.min(
+                  positions.value[newPosition.row],
+                  computedRows.value[newPosition.row] - 1
+                );
 
             break;
           }
+
           newPosition.col++;
 
-          positions.value[newPosition.row] = newPosition.col;
-
           if (
-            newPosition.col >= computedRows.value[currentPosition.value.row]
+            newPosition.col >
+            computedRows.value[currentPosition.value.row] - 1
           ) {
             if (cyclic) {
               if (autoNextRow) {
@@ -259,13 +283,21 @@ export function useNavigation({
                   newPosition.row < computedRows.value.length - 1
                     ? newPosition.row + 1
                     : 0;
+
+                newPosition.col = 0;
+              } else {
+                newPosition.col =
+                  computedRows.value[currentPosition.value.row] - 1;
               }
-              newPosition.col = 0;
             } else {
+              newPosition.col =
+                computedRows.value[currentPosition.value.row] - 1;
               onColumnEnd?.();
               return;
             }
           }
+
+          positions.value[newPosition.row] = newPosition.col;
           break;
 
         case KeyboardEnum.Enter:
@@ -284,10 +316,9 @@ export function useNavigation({
       if (isValidPosition(newPosition)) {
         currentPosition.value = newPosition;
       } else {
-        console.error("Position Not Valid. returning to default:", newPosition);
         currentPosition.value = {
-          col: 0,
-          row: 0,
+          col: positions.value[newPosition.row] - 1,
+          row: newPosition.row,
         };
       }
     } catch (error) {
